@@ -12,3 +12,4 @@ planojums = DM.iegutPlanojumu("test")
 for a,b in planojums.KlientuDati.items():
     file.write(a + ": [" + ", ".join(b) + "]\n")
 file.close()
+IM.PlanojumuSkats()
