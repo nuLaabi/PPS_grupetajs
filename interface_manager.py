@@ -3,6 +3,12 @@ from tkinter.constants import *
 from classes import *
 import database_manager as DM
 def atvertPlanojumu(datnesNosaukums, planojumuLapa):
+    '''
+    Palīgfunkcija grupu skata atvēršanai no plānojumu izvēles skata. Tā ņem kā parametrus atveramā plānojuma datnes nosaukumu un plānojumu izvēles lapas objektu, lai plānojumu izvēles lapu aizvērtu.
+    
+    :param datnesNosaukums: Nosaukums plānojuma datnei, no kuras ielasīs datus un attēlos grupu skatā, string vērtība.
+    :param planojumuLapa: Plānojuma izvēles lapas objekts, lai aizvērtu izvēles lapu.
+    '''
     nosaukums = "".join(datnesNosaukums.split('.')[:-1:])
     planojumuLapa.destroy()
     GrupuSkats(DM.iegutPlanojumu(nosaukums))

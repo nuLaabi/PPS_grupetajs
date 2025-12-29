@@ -35,15 +35,7 @@ def saglabatPlanojumu(planojums):
     
     :param planojums: Plānojums, kuru vēlas saglabāt, Planojums klases objekts
     '''
-    plan = {
-        "nosaukums": planojums.Nosaukums,
-        "grupas": planojums.Grupas,
-        "audzekni": planojums.Audzekni,
-        "klientuDati": planojums.KlientuDati,
-        "koeficienti": planojums.Koeficienti,
-        "datuStruktura": planojums.DatuStruktura
-    }
-    _pickle.dump(plan, open(f"Plānojumi/{planojums.Nosaukums}.bin", "wb"))
+    _pickle.dump(planojums.uzVardnicu(), open(f"Plānojumi/{planojums.Nosaukums}.bin", "wb"))
 #
 def ielasitKlientuDatus(path, planojums):
     '''

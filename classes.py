@@ -1,8 +1,8 @@
 import random
 SEED = 0
 random.seed(SEED)
-def classPrint(text):
-    print(text)
+
+
 def laiki():
     Laiki = { # Pieejamie nodarbību laiki tiks šādi glabāti, atslēgas ir nedēļas dienas kārtas numurs, piemēram, pie atslēgas 1 ir glabāta informācija par pirmdienu, tālāk katra iekšējā atslēga attiecas uz laiku pēc kārtas tajā dienā, tā kā sestdien ir 2 reizes vairāk nodarbību, tad tur arī ir vairāk datu
         1: {1: True, 2: True, 3: True}, # laika indeksi 0, 1, 2
@@ -50,7 +50,7 @@ def laikuStrukturetajs(pirm, o, t, c, piekt, s):
 Kursi = {
         "Scratch pamati" : "SCR1", 
         "Scratch padziļināti" : "SCR2",
-        "Mobilo lietotņu izstrāde" : "APP", 
+        "Mobilo lietotņu izstrāde" : "APPS", 
         "Mājaslapu izstrādes pamati" : "WEB1", 
         "Mājaslapu izstrāde padziļināti" : "WEB2", 
         "Python pamati" : "PYT1", 
@@ -64,7 +64,7 @@ Kursi = {
         "3D spēļu programmēšana": "GAME"
 }
 def kursaKods(nosaukums):
-    return Kursi.get(nosaukums, "KURSS_NEEKSISTĒ")
+    return Kursi.get(nosaukums, "ERROR_KURSS_NEEKSISTĒ")
 def laikaIndeksaTulkotajs(laikaIndekss): # funkcija laika indeksa konvertēšanai par dienu un laiku
     diena = laikaIndekss // 3 + 1
     laiks = laikaIndekss % 3 + 1
@@ -74,7 +74,17 @@ def laikaIndeksaTulkotajs(laikaIndekss): # funkcija laika indeksa konvertēšana
     return (diena, laiks)
 def dienasLaikaTulkotajs(diena, laiks): # funkcija, kas pārveido dienas un laika numurus par laika indeksu
     return (diena - 1) * 3 + laiks - 1
-
+def grupasKods(fil, laikaIndekss, kurss):
+    dienaLaiks = laikaIndeksaTulkotajs(laikaIndekss)
+    kods = filialesBurts(fil) + "-" + str(dienaLaiks[0]) + "-" + str(dienaLaiks[1]) + "-" + kursaKods(kurss) #potenciāli būs problēmas ar filiāles burtu Āgenskalnam
+def filialesBurts(nosaukums):
+    filiales = {
+        "Centra (Dagdas iela 4)" : "C", 
+        "Āgenskalna (Kalnciema iela 7A)" : "A", 
+        "Teikas (Zemgaļu iela 8)" : "T", 
+        "Tiešsaistes nodarbības" : "O"
+    }
+    return filiales.get(nosaukums, "ERROR_FILIĀLE_NEEKSISTĒ")
 class Persona:
     def __init__(self, vards, persKods, laiki, fil, kursi, telNr, epasts):
         self.Vards = vards
@@ -84,6 +94,7 @@ class Persona:
         self.Kursi = kursi # saraksts ar kursiem
         self.TelNr = telNr
         self.Epasts = epasts
+        
     def laiksPieejams(self, diena, laiks=-1): # funkcija pieejamības pārbaudīšanai, diena atbild par nedēļas dienu un laiks par nodarbības laiku sakārtotu pēc kārtas hronoloģiski, ja tiek ievadīta tikai diena, tad tas tiek uztverts par laika indeksu
         if laiks == -1:
             dienaLaiks = laikaIndeksaTulkotajs(diena)
@@ -92,27 +103,78 @@ class Persona:
     
     def grupaDeriga(self, fil, laikaIndekss, kurss):
         return fil in self.Filiales and self.laiksPieejams(laikaIndekss) and kurss in self.Kursi
-
+    def uzVardnicu(self):
+        vardnica = {
+            "vards": self.Vards,
+            "persKods": self.PersKods,
+            "laiki": self.Laiki,
+            "filiales": self.Filiales,
+            "kursi": self.Kursi,
+            "telNr": self.TelNr,
+            "epasts": self.Epasts,
+        }
+        return vardnica
+class Audzeknis(Persona):
+    def __init__(self, vards, persKods, laiki, fil, kursi, telNr, epasts):
+        super().__init__(vards, persKods, laiki, fil, kursi, telNr, epasts)
+        laikuSkaits = 0
+        for diena in self.Laiki:
+            laikuSkaits += len(self.Laiki[diena])
+        self.Pieejamiba = laikuSkaits * len(self.Filiales) * len(self.Kursi)
+        self.Komplektets = False
+    def uzVardnicu(self):
+        vardnica = {
+            "vards": self.Vards,
+            "persKods": self.PersKods,
+            "laiki": self.Laiki,
+            "filiales": self.Filiales,
+            "kursi": self.Kursi,
+            "telNr": self.TelNr,
+            "epasts": self.Epasts,
+            "pieejamiba": self.Pieejamiba,
+            "komplektets": self.Komplektets
+        }
+        return vardnica
 class Grupa:
-    def __init__(self, fil, laikaIndekss, kurss, audzekni, skolotajs):
+    def __init__(self, fil, laikaIndekss, kurss, audzekni=[], skolotajs=None):
         self.Filiale = fil
         self.Laiks = laikaIndekss
         self.Kurss = kurss
         self.Audzekni = audzekni
         self.Skolotajs = skolotajs
-        dienaLaiks = laikaIndeksaTulkotajs(laikaIndekss)
-        self.Kods = fil[0].upper() + "-" + str(dienaLaiks[0]) + "-" + str(dienaLaiks[1]) + "-" + kursaKods(kurss)
+        self.Komplekteta = False
+        self.Kods = grupasKods(fil, laikaIndekss, kurss)
         self.AudzeknuSkaits = len(self.Audzekni)
+        self.Vertejums = 0
     def pievienotAudzekni(self, audzeknis):
         self.Audzekni.append(audzeknis)
     def pieder(self, audzeknis):
         return audzeknis in self.Audzekni
+    def rekinatVertibu(self, koeficienti):
+        pass
+    def uzVardnicu(self):
+        audzekni = []
+        for audzeknis in self.Audzekni:
+            audzekni.append(audzeknis.uzVardnicu())
+        vardnica = {
+            "filiale": self.Filiale,
+            "laiks": self.Laiks,
+            "kurss": self.Kurss,
+            "audzekni": audzekni,
+            "skolotajs": self.Skolotajs.uzVardnicu() if self.Skolotajs else None,
+            "komplekteta": self.Komplekteta,
+            "Kods": self.Kods,
+            "audzeknuSkaits": self.AudzeknuSkaits,
+            "vertejums": self.Vertejums
+        }
+        return vardnica
 
 class Planojums:
     def __init__(self, nosaukums):
         self.Nosaukums = nosaukums
-        self.Grupas = []
+        self.Grupas = {}
         self.Audzekni = []
+        self.Skolotaji = []
         self.KlientuDati = {
             "vardi": [],
             "uzvardi": [],
@@ -153,7 +215,51 @@ class Planojums:
         self.Audzekni.append(audz)
     def pievienotGrupu(self, grupa):
         self.Grupas.append(grupa)
-
+    def generetGrupas(self):
+        for audzeknis in self.Audzekni:
+            for filiale in audzeknis.Filiales:
+                for diena,laiks in audzeknis.Laiki.items():
+                    kods = grupasKods(filiale, dienasLaikaTulkotajs(diena,laiks), audzeknis.Kursi[0])
+                    if kods in self.Grupas:
+                        self.Grupas[kods].AudzeknuSkaits += 1
+                        self.Grupas[kods].pievienotAudzekni[audzeknis]
+                    else:
+                        self.Grupas[kods] = Grupa(filiale, dienasLaikaTulkotajs(diena,laiks), audzeknis.Kursi[0], [audzeknis])
+                    
+                    
+    def atjaunotGrupas(self, komplektetaGrupa):
+        '''
+        Metode potenciālo grupu atjaunošanai. Potenciālo grupu saraksts ir jāatjaunina kādas grupas komplektēšanas gadījumā, tādēļ tiek padots Grupa klases objekts, kas norāda, kura grupa tika komplektēta.
+        
+        :param komplektetaGrupa: Grupa klases objekts, norāda, kura grupa tika komplektēta.
+        '''
+        for grupa in self.Grupas.values():
+            if not grupa.Komplekteta:
+                veiktasIzmainas = False
+                for audzeknis in komplektetaGrupa.Audzekni:
+                    if audzeknis in grupa.Audzekni:
+                        veiktasIzmainas = True
+                        grupa.Audzekni.remove(audzeknis)
+                if grupa.Skolotajs == komplektetaGrupa.Skolotajs or grupa.Laiks == komplektetaGrupa.Laiks or grupa.Kurss == komplektetaGrupa.Kurss or grupa.Filiale == komplektetaGrupa.Filiale:
+                    veiktasIzmainas = True
+                if veiktasIzmainas:
+                    grupa.rekinatVertibu(self.Koeficienti)
+    def uzVardnicu(self):
+        grupas = []
+        for grupa in self.Grupas.values():
+            grupas.append(grupa.uzVardnicu())
+        audzekni = []
+        for audzeknis in self.Audzekni:
+            audzekni.append(audzeknis.uzVardnicu())
+        vardnica = {
+            "nosaukums": self.Nosaukums,
+            "grupas": grupas,
+            "audzekni": audzekni,
+            "klientuDati": self.KlientuDati,
+            "koeficienti": self.Koeficienti,
+            "datuStruktura": self.DatuStruktura
+        }
+        return vardnica
 def generetAudzeknus(skaits, planojums):
     vardi = ["Jānis", "Pēteris", "Ēriks", "Ansis", "Artūrs", "Marks", "Jēkabs", "Antons", "Roberts", "Toms"]
     uzvardi = ["Bērziņš", "Eglīts", "Kalniņš", "Mežs", "Kļaviņš", "Ezers", "Nauda", "Pūpols", "Dīķis", "Spainis"]
