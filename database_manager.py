@@ -20,14 +20,8 @@ def iegutPlanojumu(nosaukums):
 
     :param nosaukums: Nosaukums plānojumam, kuru vēlas iegūt, string vērtība
     '''
-    planojums = Planojums(nosaukums)
     plan = _pickle.load(open(f"Plānojumi/{nosaukums}.bin", "rb"))
-    planojums.Nosaukums = plan["nosaukums"]
-    planojums.Grupas = plan["grupas"]
-    planojums.Audzekni = plan["audzekni"]
-    planojums.KlientuDati = plan["klientuDati"]
-    planojums.Koeficienti = plan["koeficienti"]
-    planojums.DatuStruktura = plan["datuStruktura"]
+    planojums = planojumsNoVardnicas(plan)
     return planojums
 def saglabatPlanojumu(planojums):
     '''
@@ -57,7 +51,7 @@ def ielasitKlientuDatus(path, planojums):
             persKods = line[ds["persKods"]]
             telNr = line[ds["telNr"]]
             epasts = line[ds["epasts"]]
-            kurss = line[ds["kurss"]]
+            kursi = line[ds["kursi"]]
             fil = line[ds["filiales"]]
             pirm = line[ds["laikiPirmdiena"]]
             otr = line[ds["laikiOtrdiena"]]
@@ -66,7 +60,9 @@ def ielasitKlientuDatus(path, planojums):
             piekt = line[ds["laikiPiektdiena"]]
             sest = line[ds["laikiSestdiena"]]
             laiki = laikuStrukturetajs(pirm, otr, tres, ceturt, piekt, sest)
-            audzeknis = Persona(vards+" "+uzvards, persKods, laiki, fil, [kurss], telNr, epasts)
+            kurss = kursi.split(", ")
+            fil = fil.split(", ")
+            audzeknis = Persona(vards+" "+uzvards, persKods, laiki, fil, kurss, telNr, epasts)
             planojums.pievienotAudzekni(audzeknis)
             kd["vardi"].append(vards)
             kd["uzvardi"].append(uzvards)

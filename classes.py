@@ -3,7 +3,7 @@ SEED = 0
 random.seed(SEED)
 
 
-def laiki():
+def jauniLaiki():
     Laiki = { # Pieejamie nodarbību laiki tiks šādi glabāti, atslēgas ir nedēļas dienas kārtas numurs, piemēram, pie atslēgas 1 ir glabāta informācija par pirmdienu, tālāk katra iekšējā atslēga attiecas uz laiku pēc kārtas tajā dienā, tā kā sestdien ir 2 reizes vairāk nodarbību, tad tur arī ir vairāk datu
         1: {1: True, 2: True, 3: True}, # laika indeksi 0, 1, 2
         2: {1: True, 2: True, 3: True}, # laika indeksi 3, 4, 5
@@ -40,7 +40,7 @@ def indeksuLicejs(klientuNelaiki, diena):
 
 
 def laikuStrukturetajs(pirm, o, t, c, piekt, s):
-    l = laiki()
+    l = jauniLaiki()
     indekss = 1
     for diena in [pirm, o, t, c, piekt, s]:
         indeksuLicejs(diena, l[indekss])
@@ -77,6 +77,7 @@ def dienasLaikaTulkotajs(diena, laiks): # funkcija, kas pārveido dienas un laik
 def grupasKods(fil, laikaIndekss, kurss):
     dienaLaiks = laikaIndeksaTulkotajs(laikaIndekss)
     kods = filialesBurts(fil) + "-" + str(dienaLaiks[0]) + "-" + str(dienaLaiks[1]) + "-" + kursaKods(kurss) #potenciāli būs problēmas ar filiāles burtu Āgenskalnam
+    return kods
 def filialesBurts(nosaukums):
     filiales = {
         "Centra (Dagdas iela 4)" : "C", 
@@ -147,6 +148,7 @@ class Grupa:
         self.AudzeknuSkaits = len(self.Audzekni)
         self.Vertejums = 0
     def pievienotAudzekni(self, audzeknis):
+        self.AudzeknuSkaits += 1
         self.Audzekni.append(audzeknis)
     def pieder(self, audzeknis):
         return audzeknis in self.Audzekni
@@ -202,7 +204,7 @@ class Planojums:
             "persKods": 4,
             "telNr": 5,
             "epasts": 6,
-            "kurss": 7,
+            "kursi": 7,
             "filiales": 8,
             "laikiPirmdiena": 9,
             "laikiOtrdiena": 10,
@@ -218,15 +220,16 @@ class Planojums:
     def generetGrupas(self):
         for audzeknis in self.Audzekni:
             for filiale in audzeknis.Filiales:
-                for diena,laiks in audzeknis.Laiki.items():
-                    kods = grupasKods(filiale, dienasLaikaTulkotajs(diena,laiks), audzeknis.Kursi[0])
-                    if kods in self.Grupas:
-                        self.Grupas[kods].AudzeknuSkaits += 1
-                        self.Grupas[kods].pievienotAudzekni[audzeknis]
-                    else:
-                        self.Grupas[kods] = Grupa(filiale, dienasLaikaTulkotajs(diena,laiks), audzeknis.Kursi[0], [audzeknis])
-                    
-                    
+                for diena,laiki in audzeknis.Laiki.items():
+                    for laiks, pieejams in laiki.items():
+                        if pieejams:
+                            kods = grupasKods(filiale, dienasLaikaTulkotajs(diena,laiks), audzeknis.Kursi[0])
+                            if kods in self.Grupas:
+                                self.Grupas[kods].AudzeknuSkaits += 1
+                                self.Grupas[kods].pievienotAudzekni(audzeknis)
+                            else:
+                                self.Grupas[kods] = Grupa(filiale, dienasLaikaTulkotajs(diena,laiks), audzeknis.Kursi[0], [audzeknis])
+    
     def atjaunotGrupas(self, komplektetaGrupa):
         '''
         Metode potenciālo grupu atjaunošanai. Potenciālo grupu saraksts ir jāatjaunina kādas grupas komplektēšanas gadījumā, tādēļ tiek padots Grupa klases objekts, kas norāda, kura grupa tika komplektēta.
@@ -260,6 +263,7 @@ class Planojums:
             "datuStruktura": self.DatuStruktura
         }
         return vardnica
+        
 def generetAudzeknus(skaits, planojums):
     vardi = ["Jānis", "Pēteris", "Ēriks", "Ansis", "Artūrs", "Marks", "Jēkabs", "Antons", "Roberts", "Toms"]
     uzvardi = ["Bērziņš", "Eglīts", "Kalniņš", "Mežs", "Kļaviņš", "Ezers", "Nauda", "Pūpols", "Dīķis", "Spainis"]
@@ -273,17 +277,64 @@ def generetAudzeknus(skaits, planojums):
             fil = [filiāles[filIndekss], filiāles[(filIndekss+random.randint(1,3))%4]]
         else:
             fil = [filiāles[filIndekss]]
-        laiki = laiki()
-        for diena in laiki:
+        laiki = jauniLaiki()
+        for diena, l in laiki.items():
             if random.random() > 0.35:
-                for laiks in diena:
+                for nr in l:
                     if random.random() > 0.35:
-                        laiki[diena][laiks] = True
+                        laiki[diena][nr] = True
         persKods = str(random.randint(100000, 999999)) + '-' + str(random.randint(100000, 999999))
         telNr = str(random.randint(0, 99999999))
         epasts = f"skolens{i}@gmail.com"
         skolens = Persona(vards, persKods, laiki, fil, [kurss], telNr, epasts)
         planojums.pievienotAudzekni(skolens)
 
-
-
+def personaNoVardnicas(vardnica):
+    persona = Persona(
+        vardnica["vards"],
+        vardnica["persKods"],
+        vardnica["laiki"],
+        vardnica["filiales"],
+        vardnica["kursi"],
+        vardnica["telNr"],
+        vardnica["epasts"]
+    )
+    if vardnica.get("pieejamiba") is not None:
+        persona.Pieejamiba = vardnica["pieejamiba"]
+        persona.Komplektets = vardnica["komplektets"]
+    return persona
+def grupaNoVardnicas(vardnica):
+    audzekni = []
+    for audzeknis in vardnica["audzekni"]:
+        audzekni.append(personaNoVardnicas(audzeknis))
+    if vardnica.get("skolotajs") is not None:
+        skolotajs = personaNoVardnicas(vardnica["skolotajs"])
+    else:
+        skolotajs = None
+    grupa = Grupa(
+        vardnica["filiale"],
+        vardnica["laiks"],
+        vardnica["kurss"],
+        audzekni,
+        skolotajs
+    )
+    grupa.Komplekteta = vardnica["komplekteta"]
+    grupa.Kods = vardnica["Kods"]
+    grupa.AudzeknuSkaits = vardnica["audzeknuSkaits"]
+    grupa.Vertejums = vardnica["vertejums"]
+    return grupa
+def planojumsNoVardnicas(vardnica):
+    planojums = Planojums(vardnica["nosaukums"])
+    grupas = {}
+    for grupa in vardnica["grupas"]:
+        g = grupaNoVardnicas(grupa)
+        grupas[g.Kods] = g
+    planojums.Grupas = grupas
+    audzekni = []
+    for audzeknis in vardnica["audzekni"]:
+        audzekni.append(personaNoVardnicas(audzeknis))
+    planojums.Audzekni = audzekni
+    planojums.KlientuDati = vardnica["klientuDati"]
+    planojums.Koeficienti = vardnica["koeficienti"]
+    planojums.DatuStruktura = vardnica["datuStruktura"]
+    return planojums
