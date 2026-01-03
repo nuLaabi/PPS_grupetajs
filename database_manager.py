@@ -30,7 +30,18 @@ def saglabatPlanojumu(planojums):
     :param planojums: Plānojums, kuru vēlas saglabāt, Planojums klases objekts
     '''
     _pickle.dump(planojums.uzVardnicu(), open(f"Plānojumi/{planojums.Nosaukums}.bin", "wb"))
-#
+def dzestPlanojumu(nosaukums):
+    '''
+    Funkcija plānojuma dzēšanai. Dzēš plānojuma datni no Plānojumi mapes.
+    
+    :param nosaukums: Plānojuma nosaukums, kuru vēlas dzēst, string vērtība
+    :raises: FileNotFoundError ja fails neeksistē
+    :raises: PermissionError ja nav tiesību dzēst failu
+    '''
+    ceļš = f"Plānojumi/{nosaukums}.bin"
+    if not os.path.exists(ceļš):
+        raise FileNotFoundError(f"Plānojums '{nosaukums}' neeksistē")
+    os.remove(ceļš)
 def ielasitKlientuDatus(path, planojums):
     '''
     Funkcija, kas no csv datnes ielasa klientu anketu datus un saglabā programmai nepieciešamo informāciju Planojums klases objektā.
@@ -39,7 +50,7 @@ def ielasitKlientuDatus(path, planojums):
     :param planojums: plānojums, kurā tiks glabāti ielasītie dati, Planojums klases objekts
     '''
     tabula = []
-    ds = planojums.DatuStruktura
+    ds = planojums.DatnesStruktura
     kd = planojums.KlientuDati
     with open(path, newline='', encoding="utf-8") as f:
         next(f)
@@ -62,7 +73,7 @@ def ielasitKlientuDatus(path, planojums):
             laiki = laikuStrukturetajs(pirm, otr, tres, ceturt, piekt, sest)
             kurss = kursi.split(", ")
             fil = fil.split(", ")
-            audzeknis = Persona(vards+" "+uzvards, persKods, laiki, fil, kurss, telNr, epasts)
+            audzeknis = Audzeknis(vards+" "+uzvards, persKods, laiki, fil, kurss, telNr, epasts)
             planojums.pievienotAudzekni(audzeknis)
             kd["vardi"].append(vards)
             kd["uzvardi"].append(uzvards)
