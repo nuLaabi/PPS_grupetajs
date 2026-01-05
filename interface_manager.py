@@ -102,6 +102,93 @@ def GrupuSkats(planojums):
     root.geometry("1400x900")
     galvena = ttk.Frame(root, padding=12)
     galvena.pack(fill='both', expand=True)
+
+    nedelas_logs = None
+    nedelas_atjaunot = lambda: None
+
+    def atvert_nedelas_skat():
+        '''Atver atsevišķu nedēļas skatu ar komplektēto grupu aizpildījumu'''
+        nonlocal nedelas_logs, nedelas_atjaunot
+        if nedelas_logs is not None and nedelas_logs.winfo_exists():
+            nedelas_logs.lift()
+            nedelas_atjaunot()
+            return
+
+        nedelas_logs = tk.Toplevel(root)
+        nedelas_logs.title(f"Nedēļas skats — {planojums.Nosaukums}")
+        nedelas_logs.geometry("900x700")
+
+        pamat = ttk.Frame(nedelas_logs, padding=12)
+        pamat.pack(fill='both', expand=True)
+
+        ttk.Label(pamat, text="Komplektētās grupas pa laikiem", font=font.Font(size=14, weight="bold")).pack(anchor='w', pady=(0,10))
+
+        fil_krasa = {
+            "C": "#4da3ff",
+            "A": "#66c266",
+            "T": "#ffd966",
+            "O": "#c9b3ff",
+        }
+        fil_kartiba = [
+            "Centra (Dagdas iela 4)",
+            "Āgenskalna (Kalnciema iela 7A)",
+            "Teikas (Zemgaļu iela 8)",
+            "Tiešsaistes nodarbības"
+        ]
+
+        laiki_no_plana = sorted({g.Laiks for g in planojums.Grupas.values()})
+
+        tabula = ttk.Frame(pamat)
+        tabula.pack(fill='both', expand=True)
+        tabula.grid_columnconfigure(0, weight=1, minsize=230)
+
+        ttk.Label(tabula, text="Laiks", width=20, font=font.Font(weight="bold")).grid(row=0, column=0, padx=(0,6), sticky='w')
+        for ci, fil in enumerate(fil_kartiba, start=1):
+            ttk.Label(tabula, text=fil.split('(')[0].strip(), width=12, font=font.Font(weight="bold")).grid(row=0, column=ci, padx=4)
+
+        kvadrati = {}
+        current_row = 1
+        ieprieks_diena = None
+        for laiks_idx in laiki_no_plana:
+            diena, _ = laikaIndeksaTulkotajs(laiks_idx)
+            if ieprieks_diena is not None and diena != ieprieks_diena:
+                tabula.grid_rowconfigure(current_row, minsize=10)
+                current_row += 1
+            ttk.Label(tabula, text=stringLaiks(laiks_idx), width=28).grid(row=current_row, column=0, sticky='w', padx=(0,6), pady=2)
+            for ci, fil in enumerate(fil_kartiba, start=1):
+                kv = tk.Label(tabula, width=8, bg='lightgray', relief='solid', bd=1)
+                kv.grid(row=current_row, column=ci, padx=4, pady=2, sticky='we')
+                kvadrati[(laiks_idx, fil)] = kv
+            ieprieks_diena = diena
+            current_row += 1
+
+        def atjaunot():
+            # Pelēki lauciņi pēc noklusējuma
+            for kv in kvadrati.values():
+                kv.config(bg='lightgray')
+
+            fil_pilnie = {filialesBurts(nos): nos for nos in fil_kartiba}
+
+            for g in planojums.Grupas.values():
+                if not g.Komplekteta:
+                    continue
+                fil_burts = filialesBurts(g.Filiale)
+                krasa = fil_krasa.get(fil_burts, 'lightgray')
+                fil_atrasts = fil_pilnie.get(fil_burts, g.Filiale)
+                key = (g.Laiks, fil_atrasts)
+                if key in kvadrati:
+                    kvadrati[key].config(bg=krasa)
+
+        nedelas_atjaunot = atjaunot
+        atjaunot()
+
+        def aizvert():
+            nonlocal nedelas_logs, nedelas_atjaunot
+            nedelas_logs.destroy()
+            nedelas_logs = None
+            nedelas_atjaunot = lambda: None
+
+        nedelas_logs.protocol("WM_DELETE_WINDOW", aizvert)
     
     # *************** Galvene ****************
     galvenes_sadala = ttk.Frame(galvena)
@@ -115,6 +202,8 @@ def GrupuSkats(planojums):
     pogu_galvene.pack(side='right', padx=(8,0))
     ttk.Button(pogu_galvene, text="Pievienot audzēkni",
                command=lambda: pievienot_audzekni()).pack(side='left', padx=(0,6))
+    ttk.Button(pogu_galvene, text="Nedēļa",
+               command=atvert_nedelas_skat).pack(side='left', padx=(0,6))
     ttk.Button(pogu_galvene, text="Koeficienti", 
                command=lambda: mainiKoeficientus(planojums, ieladet_grupas)).pack(side='left', padx=(0,6))
     ttk.Button(pogu_galvene, text="Mainīt plānojumu", 
@@ -517,6 +606,8 @@ def GrupuSkats(planojums):
             
             skaita_teksts.config(text=f"({len(saraksts)})")
             notirit_detalas()
+
+        nedelas_atjaunot()
 
     def notirit_detalas():
         '''Notīra visus detaļu laukus (gan grupas, gan audzēkņa informāciju)'''
