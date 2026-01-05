@@ -260,6 +260,50 @@ class Planojums:
         }
     def pievienotAudzekni(self, audz):
         self.Audzekni[audz.PersKods] = audz
+
+    def pievienotAudzekniPilns(self, audz):
+        '''
+        Pievieno audzēkni plānojumam un visām derīgajām grupām, izveidojot jaunas grupas, ja nepieciešams.
+        '''
+        self.pievienotAudzekni(audz)
+
+        for filiale in audz.Filiales:
+            for kurss in audz.Kursi:
+                for diena, laiki in audz.Laiki.items():
+                    for laiks_nr, pieejams in laiki.items():
+                        if not pieejams:
+                            continue
+                        laika_indekss = dienasLaikaTulkotajs(diena, laiks_nr)
+                        kods = grupasKods(filiale, laika_indekss, kurss)
+
+                        if kods in self.Grupas:
+                            grupa = self.Grupas[kods]
+                            if not grupa.pieder(audz):
+                                grupa.pievienotAudzekni(audz)
+                                grupa.AudzeknuSkaits = len(grupa.Audzekni)
+                                grupa.rekinatVertibu(self)
+                        else:
+                            jauna_grupa = Grupa(filiale, laika_indekss, kurss, [audz])
+                            self.Grupas[kods] = jauna_grupa
+                            jauna_grupa.rekinatVertibu(self)
+
+    def dzestAudzekni(self, pers_kods):
+        '''Dzēš audzēkni no plānojuma un visām grupām pēc personas koda.'''
+        audz = self.Audzekni.get(pers_kods)
+        if not audz:
+            return False
+
+        # Izņemt no audzēkņu vārdnīcas
+        del self.Audzekni[pers_kods]
+
+        # Izņemt no visām grupām un pārrēķināt vērtējumus
+        for grupa in self.Grupas.values():
+            if audz in grupa.Audzekni:
+                grupa.Audzekni = [a for a in grupa.Audzekni if a != audz]
+                grupa.AudzeknuSkaits = len(grupa.Audzekni)
+                grupa.rekinatVertibu(self)
+
+        return True
     def generetGrupas(self):
         for audzeknis in self.Audzekni.values():
             for filiale in audzeknis.Filiales:

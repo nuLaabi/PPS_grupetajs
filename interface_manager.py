@@ -113,6 +113,8 @@ def GrupuSkats(planojums):
     # Pogas labajā pusē
     pogu_galvene = ttk.Frame(galvenes_sadala)
     pogu_galvene.pack(side='right', padx=(8,0))
+    ttk.Button(pogu_galvene, text="Pievienot audzēkni",
+               command=lambda: pievienot_audzekni()).pack(side='left', padx=(0,6))
     ttk.Button(pogu_galvene, text="Koeficienti", 
                command=lambda: mainiKoeficientus(planojums, ieladet_grupas)).pack(side='left', padx=(0,6))
     ttk.Button(pogu_galvene, text="Mainīt plānojumu", 
@@ -325,6 +327,12 @@ def GrupuSkats(planojums):
     aud_pieejamiba_rezgis = ttk.Frame(aud_info_bloks)
     aud_pieejamiba_rezgis.pack(side='left', anchor='nw', pady=(0,0), fill='both', expand=True)
 
+    # Audzēkņa darbību pogas
+    aud_pogas = ttk.Frame(aud_info_bloks)
+    aud_pogas.pack(side='left', anchor='ne', padx=(8,0))
+    dzest_audzekni_poga = ttk.Button(aud_pogas, text="Dzēst audzēkni")
+    dzest_audzekni_poga.pack(anchor='n')
+
     def notirit_pieejamibas_rezginju():
         '''Notīra pieejamības režģi'''
         for w in aud_pieejamiba_rezgis.winfo_children():
@@ -534,6 +542,156 @@ def GrupuSkats(planojums):
         aud_teksts_kursi.config(text="Kursi: —")
         aud_teksts_pieejamiba.config(text="Pieejamība: —")
         notirit_pieejamibas_rezginju()
+        dzest_audzekni_poga.state(['disabled'])
+
+    def pievienot_audzekni():
+        '''Atver modālu logu jauna audzēkņa pievienošanai'''
+        logs = tk.Toplevel(root)
+        logs.title("Pievienot audzēkni")
+        logs.geometry("900x920")
+        logs.transient(root)
+        logs.grab_set()
+
+        pamat = ttk.Frame(logs, padding=12)
+        pamat.pack(fill='both', expand=True)
+
+        lauki = ttk.Frame(pamat)
+        lauki.pack(fill='x', pady=(0,10))
+        vards_var = tk.StringVar()
+        persk_var = tk.StringVar()
+        talr_var = tk.StringVar()
+        epasts_var = tk.StringVar()
+
+        def ievades_rinda(rinda, teksts, var, plat=40):
+            ttk.Label(lauki, text=teksts, width=18).grid(row=rinda, column=0, sticky='w', pady=2)
+            ttk.Entry(lauki, textvariable=var, width=plat).grid(row=rinda, column=1, sticky='w', pady=2)
+        ievades_rinda(0, "Vārds un uzvārds:", vards_var)
+        ievades_rinda(1, "Personas kods:", persk_var)
+        ievades_rinda(2, "Tālrunis:", talr_var)
+        ievades_rinda(3, "E-pasts:", epasts_var)
+
+        keisi = ttk.Frame(pamat)
+        keisi.pack(fill='x', pady=(0,10))
+        ttk.Label(keisi, text="Filiāles:", font=font.Font(weight="bold")).grid(row=0, column=0, sticky='w')
+        ttk.Label(keisi, text="Kursi:", font=font.Font(weight="bold")).grid(row=0, column=1, sticky='w', padx=(20,0))
+
+        fil_vars = {}
+        kurs_vars = {}
+        for i, fil in enumerate(Filiales.keys(), start=1):
+            fil_vars[fil] = tk.BooleanVar(value=False)
+            ttk.Checkbutton(keisi, text=fil, variable=fil_vars[fil]).grid(row=i, column=0, sticky='w', pady=1)
+        for j, kurss in enumerate(Kursi.keys(), start=1):
+            kurs_vars[kurss] = tk.BooleanVar(value=False)
+            ttk.Checkbutton(keisi, text=kurss, variable=kurs_vars[kurss]).grid(row=j, column=1, sticky='w', pady=1, padx=(20,0))
+
+        laiku_sadala = ttk.LabelFrame(pamat, text="Pieejamie laiki (zaļš = var, pelēks = nevar)", padding=8)
+        laiku_sadala.pack(fill='x', pady=(0,10))
+
+        laiki_map = jauniLaiki()
+        for d in laiki_map:
+            for l in laiki_map[d]:
+                laiki_map[d][l] = False  # lai sākumā visi būtu atzīmēti kā nepieejami
+
+        dienas_txt = ["Pirm", "Otr", "Treš", "Cet", "Piekt", "Sest"]
+        darba_laiki = ["16:00", "17:30", "19:00"]
+        sest_laiki = ["10:00", "11:30", "13:00", "15:00", "16:30", "18:00"]
+
+        laika_pogas = {}
+
+        def parsl_laiku(diena, laiks):
+            '''Pārslēdz laiku pieejamību un atjaunina pogas krāsu'''
+            laiki_map[diena][laiks] = not laiki_map[diena][laiks]
+            laika_pogas[(diena, laiks)].config(bg="lightgreen" if laiki_map[diena][laiks] else "lightgray")
+
+
+        darba_frame = ttk.Frame(laiku_sadala)
+        darba_frame.pack(anchor="w", pady=(0,8))
+        
+        ttk.Label(darba_frame, text="", width=10).grid(row=0, column=0)
+        for ci, txt in enumerate(darba_laiki, start=1):
+            ttk.Label(darba_frame, text=txt, width=8, font=font.Font(weight="bold")).grid(row=0, column=ci, padx=2)
+        
+        for di in range(1, 6):
+            ttk.Label(darba_frame, text=dienas_txt[di-1], width=10).grid(row=di, column=0, sticky='w')
+            for li in range(1, 4):
+                btn = tk.Button(darba_frame, width=4, height=1, bg="lightgray", relief='solid', bd=1,
+                                 command=lambda d=di, l=li: parsl_laiku(d, l))
+                btn.grid(row=di, column=li, padx=2, pady=2)
+                laika_pogas[(di, li)] = btn
+        
+        sest_frame = ttk.Frame(laiku_sadala)
+        sest_frame.pack(anchor="w")
+        
+        ttk.Label(sest_frame, text="", width=10).grid(row=0, column=0)
+        for ci, txt in enumerate(sest_laiki, start=1):
+            ttk.Label(sest_frame, text=txt, width=8, font=font.Font(weight="bold")).grid(row=0, column=ci, padx=2)
+        
+        ttk.Label(sest_frame, text=dienas_txt[5], width=10).grid(row=1, column=0, sticky='w')
+        for li in range(1, 7):
+            btn = tk.Button(sest_frame, width=4, height=1, bg="lightgray", relief='solid', bd=1,
+                             command=lambda d=6, l=li: parsl_laiku(d, l))
+            btn.grid(row=1, column=li, padx=2, pady=2)
+            laika_pogas[(6, li)] = btn
+
+        pogas = ttk.Frame(pamat)
+        pogas.pack(fill='x', pady=(6,0))
+
+        def saglabat():
+            vards = vards_var.get().strip()
+            pers = persk_var.get().strip()
+            talr = talr_var.get().strip()
+            ep = epasts_var.get().strip()
+            fil_sel = [f for f,v in fil_vars.items() if v.get()]
+            kur_sel = [k for k,v in kurs_vars.items() if v.get()]
+            laiki_izv = any(laiki_map[d][l] for d in laiki_map for l in laiki_map[d])
+
+            if not vards or not pers:
+                messagebox.showwarning("Brīdinājums", "Lūdzu, ievadi vārdu un personas kodu.")
+                return
+            if not fil_sel:
+                messagebox.showwarning("Brīdinājums", "Lūdzu, izvēlies vismaz vienu filiāli.")
+                return
+            if not kur_sel:
+                messagebox.showwarning("Brīdinājums", "Lūdzu, izvēlies vismaz vienu kursu.")
+                return
+            if not laiki_izv:
+                messagebox.showwarning("Brīdinājums", "Lūdzu, atzīmē vismaz vienu pieejamo laiku.")
+                return
+
+            laiki_kopa = {}
+            for d, laiki in laiki_map.items():
+                laiki_kopa[d] = {l: pieej for l, pieej in laiki.items()}
+
+            jaunais = Audzeknis(vards, pers, laiki_kopa, fil_sel, kur_sel, talr, ep)
+            planojums.pievienotAudzekniPilns(jaunais)
+            DM.saglabatPlanojumu(planojums)
+            
+            
+            ieladet_grupas()
+            messagebox.showinfo("Izdevās", f"Audzēknis {vards} pievienots.")
+            logs.destroy()
+
+        ttk.Button(pogas, text="Saglabāt", command=saglabat).pack(side='left', padx=(0,8))
+        ttk.Button(pogas, text="Atcelt", command=logs.destroy).pack(side='left')
+
+    def dzest_atlasito_audzekni():
+        '''Dzēš pašreiz atlasīto audzēkni pēc apstiprinājuma'''
+        nonlocal pasreizejais_audzeknis
+        if not pasreizejais_audzeknis:
+            messagebox.showwarning("Brīdinājums", "Lūdzu, izvēlies audzēkni, ko dzēst.")
+            return
+        a = pasreizejais_audzeknis
+        if not messagebox.askyesno("Apstiprinājums", f"Vai tiešām dzēst audzēkni {a.Vards}?\nPersonas kods: {a.PersKods}"):
+            return
+
+        if planojums.dzestAudzekni(a.PersKods):
+            DM.saglabatPlanojumu(planojums)
+            pasreizejais_audzeknis = None
+            notirit_detalas()
+            ieladet_grupas()
+            messagebox.showinfo("Izdevās", "Audzēknis dzēsts.")
+        else:
+            messagebox.showerror("Kļūda", "Neizdevās atrast audzēkni dzēšanai.")
 
     def uzzimet_pieejamibu(a):
         '''Zīmē audzēkņa pieejamības režģi ar krāsām (zaļš = var, pelēks = nevar)'''
@@ -656,6 +814,8 @@ def GrupuSkats(planojums):
             radit_audzekna_detalas()
 
     audzeknu_saraksts.bind('<<ListboxSelect>>', audzekna_klikskis)
+    dzest_audzekni_poga.config(command=dzest_atlasito_audzekni)
+    dzest_audzekni_poga.state(['disabled'])
 
     def radit_audzekna_detalas():
         '''Atjauno audzēkņa detaļu laukus ar pašreizējā audzēkņa informāciju'''
@@ -677,6 +837,7 @@ def GrupuSkats(planojums):
             aud_teksts_pieejamiba.config(text="Pieejamība: —")
 
         uzzimet_pieejamibu(a)
+        dzest_audzekni_poga.state(['!disabled'])
 
     # ******** Notikumu sasaistes *********
     saraksta_logs.bind('<<ListboxSelect>>', radit_grupu)  # Izvēles maiņa
