@@ -179,24 +179,24 @@ class Grupa:
             laikuSumma += len(laiki)
         pilnaPieejamiba = len(Kursi)*len(Filiales)*laikuSumma
         for audzeknis in self.Audzekni:
-            vertiba += (2 - audzeknis.Pieejamiba / pilnaPieejamiba)**koeficienti["audzeknuPieejamiba"] * 100
+            vertiba += (2 - audzeknis.Pieejamiba / pilnaPieejamiba)**(koeficienti["audzeknuPieejamiba"]/5) * 100
         irJauKurss = False # mainīgais, kas izseko vai ir kāda komplektēta grupa ar to pašu kursu
-        opcijas = 0 # mainīgais, kas izeseko, cik ir audzēkņu ir alternatīvajās opcijās grupām tajā pašā laikā un filiālē
+        opcijas = 0 # mainīgais, kas izeseko, cik ir potenciālās grupas ar to pašu laiku un filiāli
         for grupa in planojums.Grupas.values(): 
             if grupa != self and grupa.Komplekteta:
                 # pārbauda vai ir komplektēta kāda grupa tajā pašā filiālē vienu nodarbību iepriekš vai uz priekšu
                 diena,laiks = laikaIndeksaTulkotajs(self.Laiks)
                 gdiena,glaiks = laikaIndeksaTulkotajs(grupa.Laiks)
                 if diena == gdiena and (laiks == glaiks+1 or laiks == glaiks-1) and self.Filiale == grupa.Filiale:
-                    vertiba *= 1+koeficienti["blakusNodarbiba"]/10
+                    vertiba *= 1+koeficienti["blakusNodarbiba"]/5
                 # pārbauda vai ir kāda grupa komplektēta ar to pašu kursu
                 if self.Kurss == grupa.Kurss:
                     irJauKurss = True
             elif grupa != self and self.Filiale == grupa.Filiale and grupa.Laiks == self.Laiks:
-                opcijas += grupa.AudzeknuSkaits
+                opcijas += 1
         if not irJauKurss:
-            vertiba *= 1+koeficienti["kursaNeesamiba"]/10
-        vertiba *= 1+1/(opcijas+1)*koeficienti["opcijuNeesamiba"]
+            vertiba *= 1+koeficienti["kursaNeesamiba"]/5
+        vertiba *= koeficienti["opcijuNeesamiba"]/(opcijas+1)*5+1
         self.Vertejums = round(vertiba)
         return self.Vertejums
     def uzVardnicu(self):
@@ -263,15 +263,16 @@ class Planojums:
     def generetGrupas(self):
         for audzeknis in self.Audzekni.values():
             for filiale in audzeknis.Filiales:
-                for diena,laiki in audzeknis.Laiki.items():
-                    for laiks, pieejams in laiki.items():
-                        if pieejams:
-                            kods = grupasKods(filiale, dienasLaikaTulkotajs(diena,laiks), audzeknis.Kursi[0])
-                            if kods in self.Grupas:
-                                self.Grupas[kods].AudzeknuSkaits += 1
-                                self.Grupas[kods].pievienotAudzekni(audzeknis)
-                            else:
-                                self.Grupas[kods] = Grupa(filiale, dienasLaikaTulkotajs(diena,laiks), audzeknis.Kursi[0], [audzeknis])
+                for kurss in audzeknis.Kursi:
+                    for diena,laiki in audzeknis.Laiki.items():
+                        for laiks, pieejams in laiki.items():
+                            if pieejams:
+                                kods = grupasKods(filiale, dienasLaikaTulkotajs(diena,laiks), audzeknis.Kursi[0])
+                                if kods in self.Grupas:
+                                    self.Grupas[kods].AudzeknuSkaits += 1
+                                    self.Grupas[kods].pievienotAudzekni(audzeknis)
+                                else:
+                                    self.Grupas[kods] = Grupa(filiale, dienasLaikaTulkotajs(diena,laiks), kurss, [audzeknis])
         for grupa in self.Grupas.values():
             grupa.rekinatVertibu(self)
     def komplektetGrupu(self, grupaKods):

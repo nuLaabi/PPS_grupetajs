@@ -295,17 +295,23 @@ def GrupuSkats(planojums):
     ttk.Separator(kreisa_puse, orient='horizontal').pack(fill='x', pady=(8,8))
     
     # ******** Audzēkņa dati *********
-    audzekna_detaļu_sadaļa = ttk.LabelFrame(kreisa_puse, text="Audzeknis", padding=6)
-    audzekna_detaļu_sadaļa.pack(fill='x')
+    audzekna_detalu_sadala = ttk.LabelFrame(kreisa_puse, text="Audzeknis", padding=6)
+    audzekna_detalu_sadala.pack(fill='x')
     
+    # Izvietojums: informācija kreisajā kolonnā, pieejamības režģis labajā
+    aud_info_bloks = ttk.Frame(audzekna_detalu_sadala)
+    aud_info_bloks.pack(fill='x', expand=True)
+    info_kolone = ttk.Frame(aud_info_bloks)
+    info_kolone.pack(side='left', anchor='nw', padx=(0,8))
+
     # Izveidot teksta laukus audzēkņa informācijai
-    aud_teksts_vards = ttk.Label(audzekna_detaļu_sadaļa, text="Vārds: —", font=font.Font(weight="bold"))
-    aud_teksts_perspk = ttk.Label(audzekna_detaļu_sadaļa, text="Personas kods: —", font=font.Font(size=9))
-    aud_teksts_talr = ttk.Label(audzekna_detaļu_sadaļa, text="Tālrunis: —", font=font.Font(size=9))
-    aud_teksts_epasts = ttk.Label(audzekna_detaļu_sadaļa, text="E-pasts: —", font=font.Font(size=9))
-    aud_teksts_filiales = ttk.Label(audzekna_detaļu_sadaļa, text="Filiāles: —", font=font.Font(size=9))
-    aud_teksts_kursi = ttk.Label(audzekna_detaļu_sadaļa, text="Kursi: —", font=font.Font(size=9))
-    aud_teksts_pieejamiba = ttk.Label(audzekna_detaļu_sadaļa, text="Pieejamība: —", font=font.Font(size=9))
+    aud_teksts_vards = ttk.Label(info_kolone, text="Vārds: —", font=font.Font(weight="bold"))
+    aud_teksts_perspk = ttk.Label(info_kolone, text="Personas kods: —", font=font.Font(size=9))
+    aud_teksts_talr = ttk.Label(info_kolone, text="Tālrunis: —", font=font.Font(size=9))
+    aud_teksts_epasts = ttk.Label(info_kolone, text="E-pasts: —", font=font.Font(size=9))
+    aud_teksts_filiales = ttk.Label(info_kolone, text="Filiāles: —", font=font.Font(size=9))
+    aud_teksts_kursi = ttk.Label(info_kolone, text="Kursi: —", font=font.Font(size=9))
+    aud_teksts_pieejamiba = ttk.Label(info_kolone, text="Pieejamība: —", font=font.Font(size=9))
     
     aud_teksts_vards.pack(anchor="w", pady=(0,2))
     aud_teksts_perspk.pack(anchor="w", pady=(0,1))
@@ -315,23 +321,32 @@ def GrupuSkats(planojums):
     aud_teksts_kursi.pack(anchor="w", pady=(0,1))
     aud_teksts_pieejamiba.pack(anchor="w", pady=(0,0))
 
+    # Pieejamības vizuālais režģis (zaļš = var, pelēks = nevar)
+    aud_pieejamiba_rezgis = ttk.Frame(aud_info_bloks)
+    aud_pieejamiba_rezgis.pack(side='left', anchor='nw', pady=(0,0), fill='both', expand=True)
+
+    def notirit_pieejamibas_rezginju():
+        '''Notīra pieejamības režģi'''
+        for w in aud_pieejamiba_rezgis.winfo_children():
+            w.destroy()
+
     # ******** Grupas dati *********
     laba_puse = ttk.Frame(satura_sadala)
     laba_puse.pack(side='left', fill='both', expand=True)
 
-    detaļu_virsraksts = ttk.Label(laba_puse, text="Izvēlies grupu", font=font.Font(size=14, weight="bold"))
-    detaļu_virsraksts.pack(anchor="w")
+    detalu_virsraksts = ttk.Label(laba_puse, text="Izvēlies grupu", font=font.Font(size=14, weight="bold"))
+    detalu_virsraksts.pack(anchor="w")
     
-    detaļu_sadaļa = ttk.Frame(laba_puse, padding=6)
-    detaļu_sadaļa.pack(fill='both', expand=True, pady=(6,0))
+    detalu_sadala = ttk.Frame(laba_puse, padding=6)
+    detalu_sadala.pack(fill='both', expand=True, pady=(6,0))
 
     # Grupas informācijas lauki
-    teksts_kods = ttk.Label(detaļu_sadaļa, text="Kods: —")
-    teksts_laiks = ttk.Label(detaļu_sadaļa, text="Laiks: —")
-    teksts_filiale = ttk.Label(detaļu_sadaļa, text="Filiāle: —")
-    teksts_kurss = ttk.Label(detaļu_sadaļa, text="Kurss: —")
-    teksts_skaits = ttk.Label(detaļu_sadaļa, text="Audzekņu skaits: —")
-    teksts_vertejums = ttk.Label(detaļu_sadaļa, text="Vērtējums: —", font=font.Font(size=11, weight="bold"))
+    teksts_kods = ttk.Label(detalu_sadala, text="Kods: —")
+    teksts_laiks = ttk.Label(detalu_sadala, text="Laiks: —")
+    teksts_filiale = ttk.Label(detalu_sadala, text="Filiāle: —")
+    teksts_kurss = ttk.Label(detalu_sadala, text="Kurss: —")
+    teksts_skaits = ttk.Label(detalu_sadala, text="Audzekņu skaits: —")
+    teksts_vertejums = ttk.Label(detalu_sadala, text="Vērtējums: —", font=font.Font(size=11, weight="bold"))
     
     teksts_kods.pack(anchor="w", pady=(0,4))
     teksts_laiks.pack(anchor="w", pady=(0,4))
@@ -356,20 +371,20 @@ def GrupuSkats(planojums):
                 # Izsaukt plānojuma metodi grupas komplektēšanai
                 planojums.komplektetGrupu(pasreizeja_grupa.Kods)
                 DM.saglabatPlanojumu(planojums)
-                notirit_detaļas()
+                notirit_detalas()
                 ieladet_grupas()
-                messagebox.showinfo("Pabeigts", f"Grupa {pasreizeja_grupa.Kods} ir veiksmīgi komplektēta!")
+                messagebox.showinfo("Izdevās", f"Grupa {pasreizeja_grupa.Kods} ir veiksmīgi komplektēta!")
         elif pasreizeja_grupa and pasreizeja_grupa.Komplekteta:
             messagebox.showinfo("Grupa jau komplektēta", "Šī grupa jau ir komplektēta.")
 
-    komplektesanas_poga = ttk.Button(detaļu_sadaļa, text="Komplektēt grupu", command=komplektet_grupu)
+    komplektesanas_poga = ttk.Button(detalu_sadala, text="Komplektēt grupu", command=komplektet_grupu)
     komplektesanas_poga.pack(anchor="w", pady=(0,8))
 
-    ttk.Separator(detaļu_sadaļa, orient='horizontal').pack(fill='x', pady=(4,8))
-    ttk.Label(detaļu_sadaļa, text="Audzekņi grupā:", font=font.Font(weight="bold")).pack(anchor="w", pady=(0,4))
+    ttk.Separator(detalu_sadala, orient='horizontal').pack(fill='x', pady=(4,8))
+    ttk.Label(detalu_sadala, text="Audzekņi grupā:", font=font.Font(weight="bold")).pack(anchor="w", pady=(0,4))
     
     # ******** Audzēkņu saraksts grupā *********
-    audzeknu_konteiners = ttk.Frame(detaļu_sadaļa)
+    audzeknu_konteiners = ttk.Frame(detalu_sadala)
     audzeknu_konteiners.pack(fill='both', expand=True)
     
     audzeknu_saraksts = tk.Listbox(audzeknu_konteiners, width=60, activestyle='none')
@@ -437,7 +452,7 @@ def GrupuSkats(planojums):
                 saraksta_logs.insert('end', a.Vards)
             
             skaita_teksts.config(text=f"({len(saraksts)})")
-            notirit_detaļas()
+            notirit_detalas()
             
         else:
             # ******** Grupu režīms *********
@@ -493,11 +508,11 @@ def GrupuSkats(planojums):
                 saraksta_logs.insert('end', teksts)
             
             skaita_teksts.config(text=f"({len(saraksts)})")
-            notirit_detaļas()
+            notirit_detalas()
 
-    def notirit_detaļas():
+    def notirit_detalas():
         '''Notīra visus detaļu laukus (gan grupas, gan audzēkņa informāciju)'''
-        detaļu_virsraksts.config(text="Izvēlies grupu")
+        detalu_virsraksts.config(text="Izvēlies grupu")
         teksts_kods.config(text="Kods: —")
         teksts_laiks.config(text="Laiks: —")
         teksts_filiale.config(text="Filiāle: —")
@@ -507,9 +522,9 @@ def GrupuSkats(planojums):
         audzeknu_saraksts.delete(0, 'end')
 
         
-        notirit_audzekna_detaļas()
+        notirit_audzekna_detalas()
 
-    def notirit_audzekna_detaļas():
+    def notirit_audzekna_detalas():
         '''Notīra audzēkņa detaļu laukus'''
         aud_teksts_vards.config(text="Vārds: —")
         aud_teksts_perspk.config(text="Personas kods: —")
@@ -518,6 +533,61 @@ def GrupuSkats(planojums):
         aud_teksts_filiales.config(text="Filiāles: —")
         aud_teksts_kursi.config(text="Kursi: —")
         aud_teksts_pieejamiba.config(text="Pieejamība: —")
+        notirit_pieejamibas_rezginju()
+
+    def uzzimet_pieejamibu(a):
+        '''Zīmē audzēkņa pieejamības režģi ar krāsām (zaļš = var, pelēks = nevar)'''
+        notirit_pieejamibas_rezginju()
+
+        ttk.Label(
+            aud_pieejamiba_rezgis,
+            text="Pieejamība (zaļš = var, pelēks = nevar)",
+            font=font.Font(size=9, weight="bold")
+        ).pack(anchor="w", pady=(0,4))
+
+        # Darba dienas (1–5) ar 3 laikiem
+        darba_frame = ttk.Frame(aud_pieejamiba_rezgis)
+        darba_frame.pack(anchor="w", pady=(0,4))
+        darba_laiki = ["16:00", "17:30", "19:00"]
+        ttk.Label(darba_frame, text="", width=8).grid(row=0, column=0)
+        for ci, laiks_txt in enumerate(darba_laiki, start=1):
+            ttk.Label(darba_frame, text=laiks_txt, width=6).grid(row=0, column=ci, padx=2)
+        dienas_teksts = ["Pirm", "Otr", "Treš", "Cet", "Piekt"]
+        for di, diena_txt in enumerate(dienas_teksts):
+            ttk.Label(darba_frame, text=diena_txt, width=8).grid(row=di+1, column=0, sticky="w")
+            for li in range(3):
+                laika_indekss = di * 3 + li
+                pieejams = a.laiksPieejams(laika_indekss)
+                krasa = "lightgreen" if pieejams else "lightgray"
+                tk.Label(
+                    darba_frame,
+                    bg=krasa,
+                    width=3,
+                    height=1,
+                    relief='solid',
+                    bd=1
+                ).grid(row=di+1, column=li+1, padx=2, pady=1)
+
+        # Sestdiena ar 6 laikiem
+        sest_frame = ttk.Frame(aud_pieejamiba_rezgis)
+        sest_frame.pack(anchor="w")
+        sest_laiki = ["10:00", "11:30", "13:00", "15:00", "16:30", "18:00"]
+        
+        for ci, laiks_txt in enumerate(sest_laiki, start=1):
+            ttk.Label(sest_frame, text=laiks_txt, width=6).grid(row=0, column=ci, padx=2)
+        ttk.Label(sest_frame, text="Sest", width=10).grid(row=1, column=0, sticky="w")
+        for ci, _ in enumerate(sest_laiki):
+            laika_indekss = 15 + ci
+            pieejams = a.laiksPieejams(laika_indekss)
+            krasa = "lightgreen" if pieejams else "lightgray"
+            tk.Label(
+                sest_frame,
+                bg=krasa,
+                width=3,
+                height=1,
+                relief='solid',
+                bd=1
+            ).grid(row=1, column=ci+1, padx=2, pady=1)
 
     def radit_grupu(notikums=None):
         '''
@@ -535,10 +605,10 @@ def GrupuSkats(planojums):
             # ********* Audzēkņu režīms **********
             pasreizejais_audzeknis = saraksts[atlase[0]]
             pasreizeja_grupa = None
-            radit_audzekna_detaļas()
+            radit_audzekna_detalas()
             
             # Notīrīt grupas detaļas
-            detaļu_virsraksts.config(text="Audzēknis izvēlēts")
+            detalu_virsraksts.config(text="Audzēknis izvēlēts")
             teksts_kods.config(text="Kods: —")
             teksts_laiks.config(text="Laiks: —")
             teksts_filiale.config(text="Filiāle: —")
@@ -554,9 +624,9 @@ def GrupuSkats(planojums):
         
         # Atjaunot virsrakstu
         if pasreizeja_grupa.Komplekteta:
-            detaļu_virsraksts.config(text=f"Komplektēta grupa: {pasreizeja_grupa.Kods}")
+            detalu_virsraksts.config(text=f"Komplektēta grupa: {pasreizeja_grupa.Kods}")
         else:
-            detaļu_virsraksts.config(text=f"Grupa: {pasreizeja_grupa.Kods}")
+            detalu_virsraksts.config(text=f"Grupa: {pasreizeja_grupa.Kods}")
         
         # Atjaunot grupas informāciju
         teksts_kods.config(text=f"Kods: {pasreizeja_grupa.Kods}")
@@ -576,21 +646,21 @@ def GrupuSkats(planojums):
         else:
             audzeknu_saraksts.insert('end', "Nav audzekņu")
         
-        notirit_audzekna_detaļas()
+        notirit_audzekna_detalas()
 
     def audzekna_klikskis(notikums=None):
         nonlocal pasreizejais_audzeknis
         atlase = audzeknu_saraksts.curselection()
         if atlase and pasreizeja_grupa and pasreizeja_grupa.Audzekni:
             pasreizejais_audzeknis = pasreizeja_grupa.Audzekni[atlase[0]]
-            radit_audzekna_detaļas()
+            radit_audzekna_detalas()
 
     audzeknu_saraksts.bind('<<ListboxSelect>>', audzekna_klikskis)
 
-    def radit_audzekna_detaļas():
+    def radit_audzekna_detalas():
         '''Atjauno audzēkņa detaļu laukus ar pašreizējā audzēkņa informāciju'''
         if not pasreizejais_audzeknis:
-            notirit_audzekna_detaļas()
+            notirit_audzekna_detalas()
             return
         
         a = pasreizejais_audzeknis
@@ -605,6 +675,8 @@ def GrupuSkats(planojums):
             aud_teksts_pieejamiba.config(text=f"Pieejamība: {a.Pieejamiba}")
         else:
             aud_teksts_pieejamiba.config(text="Pieejamība: —")
+
+        uzzimet_pieejamibu(a)
 
     # ******** Notikumu sasaistes *********
     saraksta_logs.bind('<<ListboxSelect>>', radit_grupu)  # Izvēles maiņa
@@ -639,29 +711,29 @@ def PlanojumuSkats():
 
     # ********* Meklēšanas sadaļa *********
     mekletais = tk.StringVar()
-    meklesanas_sadaļa = ttk.Frame(lapa)
-    meklesanas_sadaļa.pack(fill='x', pady=(8, 6))
-    ttk.Label(meklesanas_sadaļa, text="Meklēt:").pack(side='left', padx=(0,6))
-    meklesanas_lauks = ttk.Entry(meklesanas_sadaļa, textvariable=mekletais)
+    meklesanas_sadala = ttk.Frame(lapa)
+    meklesanas_sadala.pack(fill='x', pady=(8, 6))
+    ttk.Label(meklesanas_sadala, text="Meklēt:").pack(side='left', padx=(0,6))
+    meklesanas_lauks = ttk.Entry(meklesanas_sadala, textvariable=mekletais)
     meklesanas_lauks.pack(side='left', fill='x', expand=True)
 
     # ********* Plānojumu saraksta sadaļa *********
-    planojumu_sadaļa = ttk.Frame(lapa)
-    planojumu_sadaļa.pack(fill='both', expand=True)
-    planojumu_saraksts = tk.Listbox(planojumu_sadaļa, activestyle='none', height=15, selectmode="single")
+    planojumu_sadala = ttk.Frame(lapa)
+    planojumu_sadala.pack(fill='both', expand=True)
+    planojumu_saraksts = tk.Listbox(planojumu_sadala, activestyle='none', height=15, selectmode="single")
     planojumu_saraksts.pack(side='left', fill='both', expand=True)
     ritjosla = ttk.Scrollbar(planojumu_saraksts, orient='vertical', command=planojumu_saraksts.yview)
     ritjosla.pack(side='right', fill='y')
     planojumu_saraksts.config(yscrollcommand=ritjosla.set)
 
     # ****** Pogas **********
-    pogu_sadaļa = ttk.Frame(lapa)
-    pogu_sadaļa.pack(fill='x', pady=(8,0))
-    atvert = ttk.Button(pogu_sadaļa, text="Atvērt", width=12)
-    jauns = ttk.Button(pogu_sadaļa, text="Jauns", width=12)
-    atsvaidzinat = ttk.Button(pogu_sadaļa, text="Atsvaidzināt", width=12)
-    dzest = ttk.Button(pogu_sadaļa, text="Dzēst", width=12)
-    aizvert = ttk.Button(pogu_sadaļa, text="Aizvērt", width=12, command=root.destroy)
+    pogu_sadala = ttk.Frame(lapa)
+    pogu_sadala.pack(fill='x', pady=(8,0))
+    atvert = ttk.Button(pogu_sadala, text="Atvērt", width=12)
+    jauns = ttk.Button(pogu_sadala, text="Jauns", width=12)
+    atsvaidzinat = ttk.Button(pogu_sadala, text="Atsvaidzināt", width=12)
+    dzest = ttk.Button(pogu_sadala, text="Dzēst", width=12)
+    aizvert = ttk.Button(pogu_sadala, text="Aizvērt", width=12, command=root.destroy)
     atvert.pack(side='left', padx=(0,6))
     jauns.pack(side='left', padx=(0,6))
     atsvaidzinat.pack(side='left', padx=(0,6))
@@ -713,19 +785,19 @@ def PlanojumuSkats():
         nosaukuma_logs.transient()
         nosaukuma_logs.grab_set()
         
-        galvena_sadaļa = ttk.Frame(nosaukuma_logs, padding=12)
-        galvena_sadaļa.pack(fill='both', expand=True)
+        galvena_sadala = ttk.Frame(nosaukuma_logs, padding=12)
+        galvena_sadala.pack(fill='both', expand=True)
         
-        ttk.Label(galvena_sadaļa, text="Plānojuma nosaukums:", font=font.Font(weight="bold")).pack(anchor="w", pady=(0,8))
-        ttk.Label(galvena_sadaļa, text="(tikai burti, cipari, '-' un '_')", font=font.Font(size=9), foreground='gray').pack(anchor="w", pady=(0,4))
+        ttk.Label(galvena_sadala, text="Plānojuma nosaukums:", font=font.Font(weight="bold")).pack(anchor="w", pady=(0,8))
+        ttk.Label(galvena_sadala, text="(tikai burti, cipari, '-' un '_')", font=font.Font(size=9), foreground='gray').pack(anchor="w", pady=(0,4))
         
         nosaukuma_main = tk.StringVar()
-        nosaukuma_ievade = ttk.Entry(galvena_sadaļa, textvariable=nosaukuma_main, width=40)
+        nosaukuma_ievade = ttk.Entry(galvena_sadala, textvariable=nosaukuma_main, width=40)
         nosaukuma_ievade.pack(fill='x', pady=(0,12))
         nosaukuma_ievade.focus()
         
-        pogu_sadaļa = ttk.Frame(galvena_sadaļa)
-        pogu_sadaļa.pack(fill='x')
+        pogu_sadala = ttk.Frame(galvena_sadala)
+        pogu_sadala.pack(fill='x')
         
         def izveidot():
             '''Pārbauda nosaukumu un izveido jaunu plānojumu'''
@@ -736,7 +808,7 @@ def PlanojumuSkats():
             
             # Validācija - tikai burti, cipari, '-' un '_'
             if not re.match(r'^[a-zA-Z0-9_-]+$', nosaukums):
-                messagebox.showerror("Kļūda", "Plānojuma nosaukumā drīkst izmantot tikai:\n• Burtus (a-z, A-Z)\n• Ciparus (0-9)\n• Defises (-)\n• Pasvītras (_)")
+                messagebox.showerror("Kļūda", "Plānojuma nosaukumā drīkst izmantot tikai:\n• Burtus (a-z, A-Z)\n• Ciparus (0-9)\n• Domuzīmes (-)\n• Apakšsvītras (_)")
                 return
             
             try:
@@ -763,8 +835,8 @@ def PlanojumuSkats():
             '''Aizver logu bez plānojuma izveides'''
             nosaukuma_logs.destroy()
         
-        ttk.Button(pogu_sadaļa, text="Izveidot", command=izveidot).pack(side='left', padx=(0,6))
-        ttk.Button(pogu_sadaļa, text="Atcelt", command=atcelt).pack(side='left')
+        ttk.Button(pogu_sadala, text="Izveidot", command=izveidot).pack(side='left', padx=(0,6))
+        ttk.Button(pogu_sadala, text="Atcelt", command=atcelt).pack(side='left')
     
     def dzest_izveleto():
         '''Dzēš izvēlēto plānojumu pēc apstiprinājuma'''
