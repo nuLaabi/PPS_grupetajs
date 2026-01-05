@@ -2,17 +2,27 @@ import csv
 import _pickle
 from classes import *
 import os
+from datetime import datetime
 
 def visiPlanojumi():
     '''
-    Funkcija, kas atgriež sarakstu ar visu plānojumu nosaukumiem skatoties pēc Plānojumu mapes datnēm, tā neņem pretī argumentus un atgriež sarakstu ar string vērtībām.
+    Funkcija, kas atgriež sarakstu ar plānojumu info (nosaukums un pēdējās modificēšanas laiks).
+    Atgriež sarakstu ar (nosaukums, datums_laiks_string) tuple.
     '''
     path = "Plānojumi"
     planojumi = []
     datnes = os.listdir(path)
     for datne in datnes:
-        if os.path.isfile(os.path.join(path, datne)):
-            planojumi.append(datne)
+        pilns_cels = os.path.join(path, datne)
+        if os.path.isfile(pilns_cels):
+            # Iegūt pēdējo modificēšanas laiku
+            mod_laiks = os.path.getmtime(pilns_cels)
+            mod_datums = datetime.fromtimestamp(mod_laiks)
+            # Formatēt datumu un laiku
+            datums_str = mod_datums.strftime("%Y-%m-%d %H:%M")
+            planojumi.append((datne, datums_str))
+    # Kārtot pēc modificēšanas laika (jaunākais pirmais)
+    planojumi.sort(key=lambda x: x[1], reverse=True)
     return planojumi
 def iegutPlanojumu(nosaukums):
     '''

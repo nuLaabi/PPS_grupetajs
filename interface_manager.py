@@ -190,6 +190,93 @@ def GrupuSkats(planojums):
 
         nedelas_logs.protocol("WM_DELETE_WINDOW", aizvert)
     
+    def eksportet_planojumu():
+        '''Eksportē plānojuma datus lietotājam draudzīgā formātā'''
+        # Piedāvāt saglabāšanas vietu un nosaukumu
+        datnes_cels = filedialog.asksaveasfilename(
+            title="Saglabāt plānojuma eksportu",
+            defaultextension=".txt",
+            initialfile=f"{planojums.Nosaukums}.txt",
+            filetypes=[("Teksta faili", "*.txt"), ("Visi faili", "*.*")]
+        )
+        
+        if not datnes_cels:
+            return
+        
+        try:
+            with open(datnes_cels, 'w', encoding='utf-8') as f:
+                # Virsraksts
+                f.write("=" * 80 + "\n")
+                f.write(f"PLĀNOJUMS: {planojums.Nosaukums}\n")
+                f.write("=" * 80 + "\n\n")
+                
+                # Komplektētās grupas
+                komplektetas = [g for g in planojums.Grupas.values() if g.Komplekteta]
+                komplektetas.sort(key=lambda x: (x.Laiks, x.Filiale, x.Kurss))
+                
+                f.write(f"KOMPLEKTĒTĀS GRUPAS ({len(komplektetas)})\n")
+                f.write("-" * 80 + "\n\n")
+                
+                if komplektetas:
+                    for g in komplektetas:
+                        f.write(f"Kods: {g.Kods}\n")
+                        f.write(f"Laiks: {stringLaiks(g.Laiks)}\n")
+                        f.write(f"Filiāle: {g.Filiale}\n")
+                        f.write(f"Kurss: {g.Kurss}\n")
+                        f.write(f"Audzekņu skaits: {len(g.Audzekni)}\n")
+                        f.write(f"Vērtējums: {g.Vertejums}\n")
+                        f.write("\nAudzēkņi:\n")
+                        for a in sorted(g.Audzekni, key=lambda x: x.Vards):
+                            f.write(f"  • {a.Vards} ({a.PersKods})\n")
+                            f.write(f"    Tālrunis: {a.TelNr}, E-pasts: {a.Epasts}\n")
+                        f.write("\n" + "-" * 80 + "\n\n")
+                else:
+                    f.write("Nav komplektētu grupu.\n\n")
+                
+                # Potenciālās grupas
+                potencialas = [g for g in planojums.Grupas.values() if not g.Komplekteta and len(g.Audzekni) > 0]
+                potencialas.sort(key=lambda x: x.Vertejums, reverse=True)
+                
+                f.write(f"\nPOTENCIĀLĀS GRUPAS ({len(potencialas)})\n")
+                f.write("-" * 80 + "\n\n")
+                
+                if potencialas:
+                    for g in potencialas[:20]:  # Tikai top 20
+                        f.write(f"Kods: {g.Kods} | Vērtējums: {g.Vertejums}\n")
+                        f.write(f"Laiks: {stringLaiks(g.Laiks)} | Filiāle: {g.Filiale}\n")
+                        f.write(f"Kurss: {g.Kurss} | Audzekņi: {len(g.Audzekni)}\n")
+                        f.write("\n")
+                    if len(potencialas) > 20:
+                        f.write(f"... un vēl {len(potencialas) - 20} potenciālās grupas\n\n")
+                else:
+                    f.write("Nav potenciālu grupu.\n\n")
+                
+                # Audzēkņu kopsavilkums
+                visi_audzekni = list(planojums.Audzekni.values())
+                komplekteti_audz = [a for a in visi_audzekni if a.Komplektets]
+                nekomplekteti_audz = [a for a in visi_audzekni if not a.Komplektets]
+                
+                f.write(f"\nAUDZĒKŅU KOPSAVILKUMS\n")
+                f.write("-" * 80 + "\n\n")
+                f.write(f"Kopā audzēkņi: {len(visi_audzekni)}\n")
+                f.write(f"Komplektēti: {len(komplekteti_audz)}\n")
+                f.write(f"Nekomplektēti: {len(nekomplekteti_audz)}\n\n")
+                
+                if nekomplekteti_audz:
+                    f.write("Nekomplektētie audzēkņi:\n")
+                    for a in sorted(nekomplekteti_audz, key=lambda x: x.Vards):
+                        f.write(f"  • {a.Vards} ({a.PersKods})\n")
+                        f.write(f"    Kursi: {', '.join(a.Kursi)}\n")
+                        f.write(f"    Filiāles: {', '.join(a.Filiales)}\n")
+                        f.write(f"    Kontakti: {a.TelNr}, {a.Epasts}\n\n")
+                
+                f.write("\n" + "=" * 80 + "\n")
+            
+            messagebox.showinfo("Izdevās", f"Plānojums veiksmīgi eksportēts uz:\n{datnes_cels}")
+        
+        except Exception as e:
+            messagebox.showerror("Kļūda", f"Neizdevās eksportēt plānojumu:\n{str(e)}")
+    
     # *************** Galvene ****************
     galvenes_sadala = ttk.Frame(galvena)
     galvenes_sadala.pack(fill='x', anchor="w", pady=(0,8))
@@ -204,6 +291,8 @@ def GrupuSkats(planojums):
                command=lambda: pievienot_audzekni()).pack(side='left', padx=(0,6))
     ttk.Button(pogu_galvene, text="Nedēļa",
                command=atvert_nedelas_skat).pack(side='left', padx=(0,6))
+    ttk.Button(pogu_galvene, text="Eksportēt",
+               command=eksportet_planojumu).pack(side='left', padx=(0,6))
     ttk.Button(pogu_galvene, text="Koeficienti", 
                command=lambda: mainiKoeficientus(planojums, ieladet_grupas)).pack(side='left', padx=(0,6))
     ttk.Button(pogu_galvene, text="Mainīt plānojumu", 
@@ -1028,12 +1117,13 @@ def PlanojumuSkats():
         planojumi = DM.visiPlanojumi()
         filtretais = mekletais.get().lower()
         planojumu_saraksts.delete(0, 'end')
-        for p in planojumi:
+        for datne, datums in planojumi:
             # Noņemt datnes paplašinājumu
-            p = "".join(p.split('.')[:-1:])
+            nosaukums = "".join(datne.split('.')[:-1:])
             # Pārbaudīt, vai atbilst meklēšanas filtram
-            if filtretais == "" or filtretais in p.lower():
-                planojumu_saraksts.insert('end', p)
+            if filtretais == "" or filtretais in nosaukums.lower():
+                # Attēlot nosaukumu ar datumu un laiku
+                planojumu_saraksts.insert('end', f"{nosaukums}  ({datums})")
     
     def atvert_izveleto(notikums=None):
         '''Atver izvēlēto plānojumu'''
@@ -1041,7 +1131,9 @@ def PlanojumuSkats():
         if not atlase:
             messagebox.showwarning("Brīdinājums", "Lūdzu, izvēlies plānojumu.")
             return
-        plans = planojumu_saraksts.get(atlase[0])
+        plans_ar_datumu = planojumu_saraksts.get(atlase[0])
+        # Atdalīt nosaukumu no datuma (pirms pēdējās iekavas)
+        plans = plans_ar_datumu.split('  (')[0]
         atvertPlanojumu(plans, root)
     
     def jauns_planojums():
@@ -1124,7 +1216,9 @@ def PlanojumuSkats():
         if not atlase:
             messagebox.showwarning("Brīdinājums", "Lūdzu, izvēlies plānojumu.")
             return
-        plans = planojumu_saraksts.get(atlase[0])
+        plans_ar_datumu = planojumu_saraksts.get(atlase[0])
+        # Atdalīt nosaukumu no datuma
+        plans = plans_ar_datumu.split('  (')[0]
         
         if messagebox.askyesno("Apstiprināšana", f"Vai tiešam gribā dzēst plānojumu '{plans}'?"):
             try:

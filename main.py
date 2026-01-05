@@ -4,7 +4,7 @@ from classes import *
 '''
 planojums = Planojums("test")
 DM.ielasitKlientuDatus("Datasheet.csv", planojums)
-generetAudzeknus(300, planojums)
+generetAudzeknus(1000, planojums)
 planojums.generetGrupas()
 DM.saglabatPlanojumu(planojums)
 planojums = DM.iegutPlanojumu("test")
