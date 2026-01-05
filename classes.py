@@ -347,6 +347,46 @@ class Planojums:
                     veiktasIzmainas = True
                 if veiktasIzmainas:
                     grupa.rekinatVertibu(self)
+    
+    def atkomplektetGrupu(self, grupaKods):
+        '''
+        Metode grupas atkomplektēšanai. Atkomplektē grupu, atzīmē tās audzēkņus kā nekomplektētus,
+        atjauno potenciālās grupas ar šiem audzēkņiem un atjauno grupas, kas tika dzēstas tajā pašā
+        laikā/vietā.
+        
+        :param grupaKods: String, norāda grupas kodu, kas jāatkomplektē
+        '''
+        grupa = self.Grupas.get(grupaKods)
+        if not grupa or not grupa.Komplekteta:
+            return False
+        
+        atkomplektejamie_audzekni = list(grupa.Audzekni)
+
+        grupa.Komplekteta = False
+
+        for audzeknis in atkomplektejamie_audzekni:
+            audzeknis.Komplektets = False
+
+        for audzeknis in self.Audzekni.values():
+            if audzeknis.grupaDeriga(grupa.Filiale, grupa.Laiks, audzeknis.Kursi[0] if audzeknis.Kursi else None):
+                for kurss in audzeknis.Kursi:
+                    kods = grupasKods(grupa.Filiale, grupa.Laiks, kurss)
+                    if kods not in self.Grupas:
+                        jauna_grupa = Grupa(grupa.Filiale, grupa.Laiks, kurss)
+                        self.Grupas[kods] = jauna_grupa
+
+        for potenciala_grupa in self.Grupas.values():
+            if not potenciala_grupa.Komplekteta:
+                for audzeknis in atkomplektejamie_audzekni:
+                    if audzeknis.grupaDeriga(potenciala_grupa.Filiale, potenciala_grupa.Laiks, potenciala_grupa.Kurss):
+                        if audzeknis not in potenciala_grupa.Audzekni:
+                            potenciala_grupa.Audzekni.append(audzeknis)
+                potenciala_grupa.AudzeknuSkaits = len(potenciala_grupa.Audzekni)
+                potenciala_grupa.rekinatVertibu(self)
+
+        grupa.rekinatVertibu(self)
+        
+        return True
     def uzVardnicu(self):
         grupas = []
         for grupa in self.Grupas.values():

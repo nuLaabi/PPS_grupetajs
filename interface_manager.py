@@ -473,9 +473,37 @@ def GrupuSkats(planojums):
                 messagebox.showinfo("Izdevās", f"Grupa {pasreizeja_grupa.Kods} ir veiksmīgi komplektēta!")
         elif pasreizeja_grupa and pasreizeja_grupa.Komplekteta:
             messagebox.showinfo("Grupa jau komplektēta", "Šī grupa jau ir komplektēta.")
+    
+    def atkomplektet_grupu():
+        '''Atkomplektē izvēlēto grupu pēc apstiprinājuma'''
+        if pasreizeja_grupa and pasreizeja_grupa.Komplekteta:
+            atbilde = messagebox.askyesno(
+                "Atkomplektēt grupu",
+                f"Vai tiešām vēlaties atkomplektēt grupu {pasreizeja_grupa.Kods}?\n\n"
+                f"Audzekņu skaits: {len(pasreizeja_grupa.Audzekni)}\n"
+                f"Laiks: {stringLaiks(pasreizeja_grupa.Laiks)}\n"
+                f"Filiāle: {pasreizeja_grupa.Filiale}\n"
+                f"Kurss: {pasreizeja_grupa.Kurss}\n\n"
+                f"Visi grupas audzēkņi tiks atzīmēti kā nekomplektēti un atgriezīsies potenciālajās grupās."
+            )
+            if atbilde:
+                # Izsaukt plānojuma metodi grupas atkomplektēšanai
+                if planojums.atkomplektetGrupu(pasreizeja_grupa.Kods):
+                    DM.saglabatPlanojumu(planojums)
+                    notirit_detalas()
+                    ieladet_grupas()
+                    messagebox.showinfo("Izdevās", f"Grupa {pasreizeja_grupa.Kods} ir veiksmīgi atkomplektēta!")
+                else:
+                    messagebox.showerror("Kļūda", "Neizdevās atkomplektēt grupu.")
+        elif pasreizeja_grupa and not pasreizeja_grupa.Komplekteta:
+            messagebox.showinfo("Grupa nav komplektēta", "Šī grupa nav komplektēta, tāpēc to nevar atkomplektēt.")
 
-    komplektesanas_poga = ttk.Button(detalu_sadala, text="Komplektēt grupu", command=komplektet_grupu)
-    komplektesanas_poga.pack(anchor="w", pady=(0,8))
+    pogu_ramis = ttk.Frame(detalu_sadala)
+    pogu_ramis.pack(anchor="w", pady=(0,8))
+    komplektesanas_poga = ttk.Button(pogu_ramis, text="Komplektēt grupu", command=komplektet_grupu)
+    komplektesanas_poga.pack(side='left', padx=(0,6))
+    atkomplektesanas_poga = ttk.Button(pogu_ramis, text="Atkomplektēt", command=atkomplektet_grupu)
+    atkomplektesanas_poga.pack(side='left')
 
     ttk.Separator(detalu_sadala, orient='horizontal').pack(fill='x', pady=(4,8))
     ttk.Label(detalu_sadala, text="Audzekņi grupā:", font=font.Font(weight="bold")).pack(anchor="w", pady=(0,4))
